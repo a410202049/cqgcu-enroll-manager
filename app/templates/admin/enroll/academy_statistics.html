@@ -1,0 +1,354 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block body_class %}{% endblock %}
+{% block container %}
+
+<!-- Start content -->
+  <div class="content"> 
+    <div class="container">
+        <!-- Page-Title -->
+        <div class="row">
+            <div class="col-sm-12">
+                <h4 class="page-title">{{ title }}</h4>
+                <ol class="breadcrumb">
+                    <li><a href="{{ url_for('admin.index') }}">系统首页</a></li>
+                    <li class="active">{{ title }}</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card-box">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <form class="search-box">
+                                <div class="form-inline">
+                                    <div class="form-group m-r-10">
+                                        <label for="student_no">院系:</label>
+                                        <input type="text" class="form-control" id="academy" name="academy" placeholder="院系" value="{{ data.academy }}">
+                                    </div>
+                                    <div class="form-group m-r-10">
+                                        <label for="major">专业:</label>
+                                        <input type="text" class="form-control" id="major" name="major" placeholder="专业" value="{{ data.major }}">
+                                    </div>
+                                    <div class="form-group m-r-10">
+                                        <label for="grade">年级:</label>
+                                        <input type="text" class="form-control" id="grade" name="grade" placeholder="班级" value="{{ data.grade }}">
+                                    </div>
+                                    <div class="form-group m-r-10">
+                                        <label for="class_name">班级:</label>
+                                        <input type="text" class="form-control" id="class_name" name="class_name" placeholder="班级" value="{{ data.class_name }}">
+                                    </div>
+                                </div>
+                                <div class="form-inline" style="margin-top: 15px;">
+                                    <button type="button" id="search" class="btn btn-primary waves-effect waves-light btn-md">
+                                        搜索
+                                    </button>
+                                    <button type="button" id="reset" class="btn btn-success waves-effect waves-light btn-md">
+                                        重置
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover table-actions-bar">
+                            <thead>
+                                <tr>
+                                    <th>院系</th>
+                                    <th>专业</th>
+                                    <th>年级</th>
+                                    <th>班级</th>
+                                    <th>已缴费用</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for ret in data_list %}
+                                <tr>
+                                    <td>
+                                        {{ ret.academy }}
+                                    </td>
+                                    <td>
+                                        {{ ret.major }}
+                                    </td>
+                                    <td>
+                                        {{ ret.grade }}
+                                    </td>
+                                    <td>
+                                        {{ ret.class_name }}
+                                    </td>
+                                    <td>
+                                        {{ ret.total_amt }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+
+                        {% from "macros.html" import pagination_widget %}
+                        {% if data.pagination %}
+                            <div class="pagination">
+                                {{ pagination_widget(data.pagination,request.endpoint,data.fragment) }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div> <!-- end col -->
+        </div>
+    </div>
+   <!-- container --> 
+  </div>
+
+
+
+<div id="edit-student-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">编辑学生</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form" id="edit-student-from">
+                    <input type="hidden" name="id" id="student_id">
+                    <input type="hidden" name="org_no" id="org_no">
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">学生名称</label>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="学生名称" name="student_name">
+                        </div>
+
+                        <label class="col-md-2 control-label">考生号</label>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="考生号" name="exam_no">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">学号</label>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="学号" name="student_no">
+                        </div>
+
+                        <label class="col-md-2 control-label">手机号</label>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="手机号" name="mobile">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">身份证号</label>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="身份证号" name="id_card_no">
+                        </div>
+                        <label class="col-md-2 control-label">性别</label>
+                        <div class="col-sm-3">
+                            <select class="form-control" name="sex">
+                                <option value="0">女</option>
+                                <option value="1">男</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">院系</label>
+                        <div class="col-sm-3">
+                            <select class="form-control input-change" name="academy">
+                                <option value="None">--暂无--</option>
+                                {% for data_academy in data.academys %}
+                                    <option value="{{ data_academy.academy }}">{{ data_academy.academy }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <label class="col-sm-2 control-label">专业</label>
+                        <div class="col-sm-3">
+                            <select class="form-control input-change form-control-input" name="major">
+                                <option value="None">--暂无--</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">班级</label>
+                        <div class="col-sm-3">
+                            <select class="form-control input-change form-control-input" name="class_name">
+                                <option value="None">--暂无--</option>
+                            </select>
+                        </div>
+                        <label class="col-sm-2 control-label">年级</label>
+                        <div class="col-sm-3">
+                            <select class="form-control form-control-input" name="grade">
+                                <option value="None">--暂无--</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary waves-effect waves-light" id="btn-edit-student">编辑</button>
+                <button type="button" class="btn btn-white waves-effect" data-dismiss="modal">取消</button>
+            </div>
+        </div>
+    </div>
+</div><!-- /.modal -->
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(function () {
+            layui.use(['layer','laydate','upload'], function(){
+                var layer = layui.layer;
+                var upload = layui.upload;//执行实例
+
+                $('.student-edit').click(function () {
+                    var student_id = $(this).data('id');
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ url_for("admin.get_student_info") }}',
+                        beforeSend: function(){
+                            layer.load(0, {shade: false}); //0代表加载的风格，支持0-2
+                        },
+                        complete: function(){
+                            layer.closeAll('loading');
+                        },
+                        data: {student_id:student_id},
+                        dataType: "json",
+                        success: function(data){
+                            console.log(data);
+                            if(data.result == 0){
+
+                                $('#edit-student-modal [name="org_no"]').val(data.data.org_no);
+                                $('#edit-student-modal [name="student_no"]').val(data.data.student_no);
+                                $('#edit-student-modal [name="student_name"]').val(data.data.name);
+                                $('#edit-student-modal [name="mobile"]').val(data.data.mobile);
+                                $('#edit-student-modal [name="exam_no"]').val(data.data.exam_no);
+                                $('#edit-student-modal [name="id_card_no"]').val(data.data.id_card_no);
+                                $('#edit-student-modal [name="sex"]').val(data.data.sex);
+                                $('#edit-student-modal #student_id').val(student_id);
+
+
+                                $('#edit-student-modal [name="academy"]').val(data.data.academy);
+                                $('#edit-student-modal [name="academy"]').trigger("change");
+
+
+                                $('#edit-student-modal [name="major"]').val(data.data.major);
+                                $('#edit-student-modal [name="major"]').trigger("change");
+
+
+                                $('#edit-student-modal [name="class_name"]').val(data.data.class_name);
+                                $('#edit-student-modal [name="class_name"]').trigger("change");
+
+                                $('#edit-student-modal [name="grade"]').val(data.data.grade);
+
+                                $('#edit-student-modal').modal();
+                            }else {
+                                layer.msg(data.message,{icon: 5});
+                            }
+                        }
+                    });
+                });
+
+                $('.input-change').change(function () {
+                    var send_data = {};
+                    if($(this).attr('name') == 'academy'){
+                        send_data.type = 'academy';
+                        send_data.academy = $(this).val();
+
+                    }else if($(this).attr('name') == 'major'){
+                        send_data.type = 'major';
+                        send_data.academy = $('#edit-student-from [name="academy"]').val();
+                        send_data.major = $('#edit-student-from [name="major"]').val();
+
+                    }else if($(this).attr('name') == 'class_name'){
+                        send_data.type = 'class_name';
+                        send_data.major = $('#edit-student-from [name="major"]').val();
+                        send_data.academy = $('#edit-student-from [name="academy"]').val();
+                        send_data.class_name = $('#edit-student-from [name="class_name"]').val();
+                    }
+
+                    $.ajax({
+                        type: 'POST',
+                        async: false,
+                        url: '{{ url_for("admin.get_organization_info") }}',
+                        beforeSend: function(){
+                            layer.load(0, {shade: false}); //0代表加载的风格，支持0-2
+                        },
+                        complete: function(){
+                            layer.closeAll('loading');
+                        },
+                        data: send_data,
+                        dataType: "json",
+                        success: function(data){
+                            if(data.result == 0){
+                                var option_str = "<option value='None'>--暂无--</option>";
+                                for(var i =0;i<data.data.length;i++){
+                                    option_str += "<option value='"+data.data[i]+"'>"+data.data[i]+"</option>";
+                                }
+                                if(send_data.type == 'academy'){
+                                    $('#edit-student-from [name="major"]').html(option_str);
+                                }
+                                if(send_data.type == 'major'){
+                                    $('#edit-student-from [name="class_name"]').html(option_str);
+                                }
+                                if(send_data.type == 'class_name'){
+                                    $('#edit-student-from [name="grade"]').html(option_str);
+                                }
+                            }else {
+                                layer.msg(data.message,{icon: 5});
+                            }
+                        }
+                    });
+                });
+
+
+                $('#btn-edit-student').click(function () {
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ url_for("admin.save_student_info") }}',
+                        beforeSend: function(){
+                            layer.load(0, {shade: false}); //0代表加载的风格，支持0-2
+                        },
+                        complete: function(){
+                            layer.closeAll('loading');
+                        },
+                        data: $("#edit-student-from").serialize(),
+                        dataType: "json",
+                        success: function(data){
+                            if(data.result == 0){
+                                layer.msg('编辑成功',{icon: 6,time: 1000});
+                                window.location.reload()
+                            }else {
+                                layer.msg(data.message,{icon: 5});
+                            }
+                        }
+                    });
+                });
+
+                upload.render({
+                    elem: '#import_student', //绑定元素
+                    exts: 'xlsx|xls',
+                    url: '{{ url_for("admin.student_import") }}',
+                    size:2048,
+                    before:function(obj){
+                        layer.load(0, {shade: false});
+                    }
+                    ,done: function(res){
+                      //上传完毕回调
+                        layer.closeAll('loading');
+                        console.log(res);
+                        layer.msg('导入成功',{icon: 6,time: 1000});
+                        window.location.reload();
+                    }
+                    ,error: function(e){
+                      //请求异常回调
+                        console.log(e)
+                    }
+                });
+
+            });
+        })
+    </script>
+{% endblock %}

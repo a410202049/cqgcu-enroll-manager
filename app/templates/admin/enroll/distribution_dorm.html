@@ -1,0 +1,137 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block body_class %}{% endblock %}
+
+{% block header %}
+    <style>
+        .sex-span{
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .sex-span a{
+            vertical-align: middle;
+        }
+        .sex-span i{
+            margin-right: 5px;
+            font-size: 24px;
+            vertical-align: middle;
+        }
+
+        .sex-span .allocated,.sex-span .allocated:hover{
+            color: #2ca02c;
+        }
+
+        .sex-span .unallocated,.sex-span .unallocated:hover{
+            color: #a94442;
+        }
+
+        .sex-span .ion-man{
+            color: #0c7cd5;
+        }
+
+        .sex-span .ion-woman{
+            color: #fbc2c4;
+        }
+
+    </style>
+{% endblock %}
+{% block container %}
+
+<!-- Start content -->
+  <div class="content"> 
+    <div class="container">
+        <!-- Page-Title -->
+        <div class="row">
+            <div class="col-sm-12">
+                <h4 class="page-title">{{ title }}</h4>
+                <ol class="breadcrumb">
+                    <li><a href="{{ url_for('admin.index') }}">系统首页</a></li>
+                    <li class="active">{{ title }}</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card-box">
+                    {% for key,value in data.items() %}
+                        <div class="build-item">
+                            <p>{{ key }}</p>
+                            <div class="dorm-item clearfix">
+                                {% for k,v in value.items() %}
+                                    {% if k != 'sex' %}
+                                        <span data-dorm-no="{{ k }}" class="dorm-span{% if v.status == 2  %} disable{% elif v.status == 1 %} active{% endif %}">{{ k }}<i>床位数：{{ v.bed_num }}</i></span>
+{#                                        <span class="bed-num">{{ v.bed_num }}</span>#}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                </div>
+            </div> <!-- end col -->
+        </div>
+    </div>
+   <!-- container -->
+  </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(function () {
+            layui.use(['layer','laydate','upload'], function(){
+                var layer = layui.layer;
+                var upload = layui.upload;//执行实例
+
+                $('.dorm-span').click(function () {
+                    var _this = this;
+                    if(!$(this).hasClass('disable')){
+                        var dorm_no = $(this).data('dorm-no');
+                        var org_no = "{{ org_no }}";
+                        var distribution = 0;
+                        var send_data = {};
+                        send_data.dorm_no = dorm_no;
+                        send_data.org_no = org_no;
+                        send_data.sex = "{{ sex }}";
+                        if($(this).hasClass('active')){
+                            distribution = 0
+                        }else{
+                            distribution = 1
+                        }
+                        send_data.distribution = distribution;
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '{{ url_for("admin.distribution_dorm_method") }}',
+                            beforeSend: function(){
+                                layer.load(0, {shade: false}); //0代表加载的风格，支持0-2
+                            },
+                            complete: function(){
+                                layer.closeAll('loading');
+                            },
+                            data: send_data,
+                            dataType: "json",
+                            success: function(data){
+                                console.log(data);
+                                if(data.result == 0){
+                                    if(send_data.distribution){
+                                        $(_this).addClass('active');
+                                    }else{
+                                        $(_this).removeClass('active');
+                                    }
+{#                                    layer.msg(data.message,{icon: 6});#}
+                                }else {
+                                    layer.msg(data.message,{icon: 5});
+                                }
+                            }
+                        });
+                    }
+                });
+
+
+            });
+        })
+    </script>
+{% endblock %}

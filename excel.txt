@@ -1,0 +1,19 @@
+        @classmethod
+        def export_payment_detail(cls):
+
+            buffer = StringIO()
+            data_list = ExportService.gen_payment_data()
+            wb = xlwt.Workbook()
+            ws = wb.add_sheet(u"缴费详情")
+            row = 0
+            for data in data_list:
+                for i in xrange(0, len(data)):
+                    name = data[i]
+                    ws.write(row, i, name)
+                row += 1
+            wb.save(buffer)
+            return buffer
+        file_buffer = ExportService().export_payment_detail()
+        return Response(file_buffer.getvalue(),
+                       mimetype="application/vnd.ms-excel",
+                       headers={"Content-Disposition": "attachment;filename=学生缴费详情.xls"})
